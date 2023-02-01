@@ -1,27 +1,16 @@
-import { useState, useEffect } from 'react';
 import { useParams } from 'react-router';
 import { Link } from 'react-router-dom';
-import { getJob, deleteJob } from '../graphql/queries';
-import { useNavigate } from 'react-router';
+import { useJob } from '../graphql/hooks';
 
 function JobDetail() {
-  const navigate = useNavigate();
   const { jobId } = useParams();
-  const [job, setJob] = useState();
+  const { job, loading, error } = useJob(jobId);
 
-  useEffect(() => {
-    getJob(jobId).then(setJob);
-  }, [jobId]);
-
-  async function handleDeleteJob() {
-    const job = await deleteJob(jobId);
-    if (job) {
-      navigate('/');
-    }
-  }
-
-  if (!job) {
+  if (loading) {
     return <p>Loading...</p>;
+  }
+  if (error) {
+    return <p>Sorry Something went wrong</p>;
   }
   return (
     <div>
@@ -30,7 +19,6 @@ function JobDetail() {
         <Link to={`/companies/${job.company.id}`}>{job.company.name}</Link>
       </h2>
       <div className="box">{job.description}</div>
-      <button onClick={handleDeleteJob}>Delete Job</button>
     </div>
   );
 }

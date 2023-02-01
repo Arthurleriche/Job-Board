@@ -35,7 +35,7 @@ export const JOBS_QUERY = gql`
   }
 `;
 
-const JOB_QUERY = gql`
+export const JOB_QUERY = gql`
   query jobQuery($id: ID!) {
     job(id: $id) {
       ...JobDetail
@@ -44,74 +44,29 @@ const JOB_QUERY = gql`
   ${JOB_DETAIL_FRAGMENT}
 `;
 
-// GET JOB
-export async function getJob(id) {
-  const variables = { id };
-  const {
-    data: { job },
-  } = await client.query({ query: JOB_QUERY, variables });
-
-  return job;
-}
-
-// GET COMPANY
-export async function getCompany(id) {
-  const query = gql`
-    query getCompany($id: ID!) {
-      company(id: $id) {
+export const COMPANY_QUERY = gql`
+  query getCompany($id: ID!) {
+    company(id: $id) {
+      id
+      name
+      description
+      jobs {
         id
-        name
+        title
         description
-        jobs {
-          id
-          title
-          description
-        }
       }
     }
-  `;
+  }
+`;
 
-  const variables = { id };
-  const {
-    data: { company },
-  } = await client.query({ query, variables });
-
-  return company;
-}
-
-// CREATE JOB
-export async function createJob(input) {
-  const mutation = gql`
-    mutation CreateJobMutation($input: CreateJobInput!) {
-      job: createJob(input: $input) {
-        ...JobDetail
-      }
+export const CREATE_JOB_MUTATION = gql`
+  mutation CreateJobMutation($input: CreateJobInput!) {
+    job: createJob(input: $input) {
+      ...JobDetail
     }
-    ${JOB_DETAIL_FRAGMENT}
-  `;
-
-  const variables = { input };
-  const context = {
-    headers: { Authorization: 'Bearer ' + getAccessToken() },
-  };
-
-  const {
-    data: { job },
-  } = await client.mutate({
-    mutation,
-    variables,
-    context,
-    update: (cache, { data: { job } }) => {
-      cache.writeQuery({
-        query: JOB_QUERY,
-        variables: { id: job.id },
-        data: { job },
-      });
-    },
-  });
-
-  return job;
-}
+  }
+  ${JOB_DETAIL_FRAGMENT}
+`;
 
 // DELETE JOB
 export async function deleteJob(id) {
@@ -127,3 +82,71 @@ export async function deleteJob(id) {
   const { job } = await request(GRAPHQS_URL, mutation, variables);
   return job;
 }
+
+// GET JOB
+// export async function getJob(id) {
+//   const variables = { id };
+//   const {
+//     data: { job },
+//   } = await client.query({ query: JOB_QUERY, variables });
+
+//   return job;
+// }
+
+// // GET COMPANY
+// export async function getCompany(id) {
+//   const query = gql`
+//     query getCompany($id: ID!) {
+//       company(id: $id) {
+//         id
+//         name
+//         description
+//         jobs {
+//           id
+//           title
+//           description
+//         }
+//       }
+//     }
+//   `;
+
+//   const variables = { id };
+//   const {
+//     data: { company },
+//   } = await client.query({ query, variables });
+
+//   return company;
+// }
+
+// export async function createJob(input) {
+//   const mutation = gql`
+//     mutation CreateJobMutation($input: CreateJobInput!) {
+//       job: createJob(input: $input) {
+//         ...JobDetail
+//       }
+//     }
+//     ${JOB_DETAIL_FRAGMENT}
+//   `;
+
+//   const variables = { input };
+//   const context = {
+//     headers: { Authorization: 'Bearer ' + getAccessToken() },
+//   };
+
+//   const {
+//     data: { job },
+//   } = await client.mutate({
+//     mutation,
+//     variables,
+//     context,
+//     update: (cache, { data: { job } }) => {
+//       cache.writeQuery({
+//         query: JOB_QUERY,
+//         variables: { id: job.id },
+//         data: { job },
+//       });
+//     },
+//   });
+
+//   return job;
+// }
